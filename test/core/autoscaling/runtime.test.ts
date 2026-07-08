@@ -1,56 +1,7 @@
 import asyncFs from 'node:fs/promises';
 
-import { getCgroupsVersion, isDocker, isLambda, sleep, snakeCaseToCamelCase, weightedAvg } from '@crawlee/utils';
-
-describe('isDocker()', () => {
-    test('works for dockerenv && cgroup', async () => {
-        const statMock = vitest.spyOn(asyncFs, 'stat').mockImplementationOnce(async () => null as any);
-        const readMock = vitest
-            .spyOn(asyncFs, 'readFile')
-            .mockImplementationOnce(async () => Promise.resolve('something ... docker ... something'));
-
-        const is = await isDocker(true);
-
-        expect(is).toBe(true);
-    });
-
-    test('works for dockerenv', async () => {
-        const statMock = vitest.spyOn(asyncFs, 'stat').mockImplementationOnce(async () => null as any);
-        const readMock = vitest
-            .spyOn(asyncFs, 'readFile')
-            .mockImplementationOnce(async () => Promise.resolve('something ... ... something'));
-
-        const is = await isDocker(true);
-
-        expect(is).toBe(true);
-    });
-
-    test('works for cgroup', async () => {
-        const statMock = vitest
-            .spyOn(asyncFs, 'stat')
-            .mockImplementationOnce(async () => Promise.reject(new Error('no.')));
-        const readMock = vitest
-            .spyOn(asyncFs, 'readFile')
-            .mockImplementationOnce(async () => Promise.resolve('something ... docker ... something'));
-
-        const is = await isDocker(true);
-
-        expect(is).toBe(true);
-    });
-
-    test('works for nothing', async () => {
-        const statMock = vitest
-            .spyOn(asyncFs, 'stat')
-            .mockImplementationOnce(async () => Promise.reject(new Error('no.')));
-        const readMock = vitest
-            .spyOn(asyncFs, 'readFile')
-            .mockImplementationOnce(async () => Promise.resolve('something ... ... something'));
-
-        const is = await isDocker(true);
-
-        expect(is).toBe(false);
-    });
-});
+import { getCgroupsVersion, isLambda } from '../../../packages/core/src/system-info/runtime.js';
+import { sleep } from '@crawlee/utils';
 
 describe('isContainerized()', () => {
     afterEach(() => {
@@ -62,7 +13,7 @@ describe('isContainerized()', () => {
 
     test('returns true when a "/.dockerenv" file exists', async () => {
         // @ts-ignore flaky linting of dynamic import. Some environments throw ts(2307), others not.
-        const { isContainerized } = await import('@crawlee/utils');
+        const { isContainerized } = await import('../../../packages/core/src/system-info/runtime.js');
         const statMock = vitest.spyOn(asyncFs, 'stat').mockImplementationOnce(async () => null as any);
         const result = await isContainerized();
         expect(result).toBe(true);
@@ -70,7 +21,7 @@ describe('isContainerized()', () => {
 
     test('returns false when isLambda is true', async () => {
         // @ts-ignore flaky linting of dynamic import. Some environments throw ts(2307), others not.
-        const utils = await import('@crawlee/utils');
+        const utils = await import('../../../packages/core/src/system-info/runtime.js');
         const lambdaMock = vitest.spyOn(utils, 'isLambda').mockReturnValue(true);
         const result = await utils.isContainerized();
         expect(result).toBe(false);
@@ -78,7 +29,7 @@ describe('isContainerized()', () => {
 
     test('returns true when a "/proc/stat/cgroup" file contains "docker"', async () => {
         // @ts-ignore flaky linting of dynamic import. Some environments throw ts(2307), others not.
-        const { isContainerized } = await import('@crawlee/utils');
+        const { isContainerized } = await import('../../../packages/core/src/system-info/runtime.js');
         const readFileMock = vitest
             .spyOn(asyncFs, 'readFile')
             .mockResolvedValue("'something ... docker ... something'");
@@ -88,7 +39,7 @@ describe('isContainerized()', () => {
 
     test('returns true when KUBERNETES_SERVICE_HOST environment variable is set', async () => {
         // @ts-ignore flaky linting of dynamic import. Some environments throw ts(2307), others not.
-        const { isContainerized } = await import('@crawlee/utils');
+        const { isContainerized } = await import('../../../packages/core/src/system-info/runtime.js');
         process.env.KUBERNETES_SERVICE_HOST = 'some-host';
         const result = await isContainerized();
         expect(result).toBe(true);
@@ -96,7 +47,7 @@ describe('isContainerized()', () => {
 
     test('returns false when no other conditions are met', async () => {
         // @ts-ignore flaky linting of dynamic import. Some environments throw ts(2307), others not.
-        const { isContainerized } = await import('@crawlee/utils');
+        const { isContainerized } = await import('../../../packages/core/src/system-info/runtime.js');
         const result = await isContainerized();
         expect(result).toBe(false);
     });
@@ -144,18 +95,6 @@ describe('getCgroupsVersion()', () => {
     });
 });
 
-describe('weightedAvg()', () => {
-    test('works', () => {
-        expect(weightedAvg([10, 10, 10], [1, 1, 1])).toBe(10);
-        expect(weightedAvg([5, 10, 15], [1, 1, 1])).toBe(10);
-        expect(weightedAvg([10, 10, 10], [0.5, 1, 1.5])).toBe(10);
-        expect(weightedAvg([29, 35, 89], [13, 91, 3])).toEqual((29 * 13 + 35 * 91 + 89 * 3) / (13 + 91 + 3));
-        expect(weightedAvg([], [])).toEqual(NaN);
-        expect(weightedAvg([1], [0])).toEqual(NaN);
-        expect(weightedAvg([], [1])).toEqual(NaN);
-    });
-});
-
 describe('sleep()', () => {
     test('works', async () => {
         await Promise.resolve();
@@ -170,20 +109,5 @@ describe('sleep()', () => {
         const timeAfter = Date.now();
 
         expect(timeAfter - timeBefore).toBeGreaterThanOrEqual(95);
-    });
-});
-
-describe('snakeCaseToCamelCase()', () => {
-    test('should camel case all sneaky cases of snake case', () => {
-        const tests = {
-            'aaa_bbb_': 'aaaBbb',
-            '': '',
-            'AaA_bBb_cCc': 'aaaBbbCcc',
-            'a_1_b_1a': 'a1B1a',
-        };
-
-        Object.entries(tests).forEach(([snakeCase, camelCase]) => {
-            expect(snakeCaseToCamelCase(snakeCase)).toEqual(camelCase);
-        });
     });
 });

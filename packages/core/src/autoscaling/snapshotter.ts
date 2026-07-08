@@ -1,4 +1,5 @@
-import { getMemoryInfo, isContainerized } from '@crawlee/utils';
+import { isContainerized } from '../system-info/runtime.js';
+import { getMemoryInfo } from '../system-info/memory-info.js';
 import ow from 'ow';
 
 import type { BetterIntervalID } from '@apify/utilities';
