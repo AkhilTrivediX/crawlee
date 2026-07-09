@@ -180,12 +180,6 @@ export class ServiceLocator implements ServiceLocatorInterface {
     getEventManager(): EventManager {
         if (!this.eventManager) {
             this.getLogger().debug('No event manager set, implicitly creating and using default LocalEventManager.');
-            if (!this.configuration) {
-                this.getLogger().warning(
-                    'Implicit creation of event manager will implicitly set configuration as side effect. ' +
-                        'It is advised to explicitly first set the configuration instead.',
-                );
-            }
             this.eventManager = LocalEventManager.fromConfig(this.getConfiguration());
         }
         return this.eventManager;
@@ -211,12 +205,6 @@ export class ServiceLocator implements ServiceLocatorInterface {
                 'No storage client set, implicitly creating and using the default storage client ' +
                     '(FileSystemStorageClient when persistStorage is enabled, MemoryStorageClient otherwise).',
             );
-            if (!this.configuration) {
-                this.getLogger().warning(
-                    'Implicit creation of storage client will implicitly set configuration as side effect. ' +
-                        'It is advised to explicitly first set the configuration instead.',
-                );
-            }
             const config = this.getConfiguration();
             this.storageClient = config.persistStorage
                 ? new FileSystemStorageClient({
