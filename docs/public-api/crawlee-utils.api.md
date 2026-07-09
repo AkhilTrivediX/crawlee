@@ -31,9 +31,6 @@ export { CheerioAPI }
 // @public (undocumented)
 export type CheerioRoot = CheerioAPI;
 
-// @public (undocumented)
-export function chunk<T>(array: readonly T[], chunkSize: number): T[][];
-
 // @internal
 export function chunkedAsyncIterable<T>(iterable: AsyncIterable<T> | Iterable<T>, chunkSize: number): AsyncIterable<T[]>;
 
@@ -41,14 +38,6 @@ export function chunkedAsyncIterable<T>(iterable: AsyncIterable<T> | Iterable<T>
 export const CLOUDFLARE_RETRY_CSS_SELECTORS: string[];
 
 export { Constructor }
-
-// @public
-export interface CpuSample {
-    // (undocumented)
-    containerUsage: number;
-    // (undocumented)
-    systemUsage: number;
-}
 
 // @public
 export function createRequestDebugInfo(request: Request_2, response?: IncomingMessage | Partial<BrowserResponseLike>, additionalFields?: Dictionary): Dictionary;
@@ -121,21 +110,6 @@ const FACEBOOK_REGEX: RegExp;
 // @public
 const FACEBOOK_REGEX_GLOBAL: RegExp;
 
-// @public
-export function getCgroupsVersion(forceReset?: boolean): Promise<"V1" | "V2" | null>;
-
-// @internal
-export function getCurrentCpuTicksV2(options?: {
-    containerized?: boolean;
-    logger?: CrawleeLogger;
-}): Promise<number>;
-
-// @internal
-export function getMemoryInfo(options?: {
-    containerized?: boolean;
-    logger?: CrawleeLogger;
-}): Promise<MemoryInfo>;
-
 // @public (undocumented)
 export function getObjectType(value: unknown): string;
 
@@ -157,17 +131,8 @@ export function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T>;
 // @public
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | ArrayBufferView;
 
-// @public
-export function isContainerized(): Promise<boolean>;
-
-// @public
-export function isDocker(forceReset?: boolean): Promise<boolean>;
-
 // @internal
 export function isIterable<T>(value: unknown): value is Iterable<T>;
-
-// @public (undocumented)
-export function isLambda(): boolean;
 
 // @public
 export function isStream(value: unknown): value is NodeJS.ReadableStream | ReadableStream;
@@ -180,15 +145,6 @@ const LINKEDIN_REGEX: RegExp;
 
 // @public
 const LINKEDIN_REGEX_GLOBAL: RegExp;
-
-// @public
-export interface MemoryInfo {
-    childProcessesBytes: number;
-    freeBytes: number;
-    mainProcessBytes: number;
-    totalBytes: number;
-    usedBytes: number;
-}
 
 // @public
 export function mergeAsyncIterables<T>(...iterables: AsyncIterable<T>[]): AsyncIterable<T>;
