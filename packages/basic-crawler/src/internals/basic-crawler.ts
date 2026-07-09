@@ -813,8 +813,8 @@ export class BasicCrawler<
             // Store whether the user explicitly provided an ID
             this.hasExplicitId = id !== undefined;
             // Store the user-provided ID, or generate a unique one for tracking purposes (not for state key)
-            this.crawlerId = id ?? cryptoRandomObjectId();
             this.crawlerInstanceIndex = BasicCrawler.instanceCount++;
+            this.crawlerId = id ?? this.crawlerInstanceIndex.toString();
 
             if (requestManager !== undefined) {
                 if (requestList !== undefined || requestQueue !== undefined) {
@@ -872,7 +872,7 @@ export class BasicCrawler<
             this.stats = new Statistics({
                 logMessage: `${this.constructor.name} request statistics:`,
                 log: this.log,
-                ...(this.hasExplicitId ? { id: this.crawlerId } : {}),
+                id: this.crawlerId,
                 ...statisticsOptions,
             });
 
@@ -1467,8 +1467,7 @@ export class BasicCrawler<
     private async openOwnedRequestQueue(): Promise<IRequestManager> {
         // The first crawler instance uses the default queue (null identifier);
         // subsequent instances get their own queue via a unique alias so they don't collide.
-        const identifier =
-            this.crawlerInstanceIndex === 0 ? null : { alias: `__default_${this.crawlerInstanceIndex}__` };
+        const identifier = this.crawlerInstanceIndex === 0 ? null : { alias: `__default_${this.crawlerId}__` };
 
         const requestQueue = await RequestQueue.open(identifier, { config: serviceLocator.getConfiguration() });
         this.ownedRequestManager = requestQueue;
