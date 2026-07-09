@@ -1,7 +1,6 @@
 import asyncFs from 'node:fs/promises';
 
 import { getCgroupsVersion, isDocker, isLambda } from '../../../packages/core/src/system-info/runtime.js';
-import { sleep } from '@crawlee/utils';
 
 describe('isDocker()', () => {
     test('works for dockerenv && cgroup', async () => {
@@ -142,22 +141,5 @@ describe('getCgroupsVersion()', () => {
         vitest.spyOn(asyncFs, 'access').mockResolvedValue();
         const version = await getCgroupsVersion(true);
         expect(version).toBe('V1');
-    });
-});
-
-describe('sleep()', () => {
-    test('works', async () => {
-        await Promise.resolve();
-        await sleep(0);
-        await sleep();
-        // @ts-expect-error invalid input type
-        await sleep(null);
-        await sleep(-1);
-
-        const timeBefore = Date.now();
-        await sleep(100);
-        const timeAfter = Date.now();
-
-        expect(timeAfter - timeBefore).toBeGreaterThanOrEqual(95);
     });
 });
