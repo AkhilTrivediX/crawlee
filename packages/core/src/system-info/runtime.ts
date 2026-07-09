@@ -1,5 +1,33 @@
 import fs from 'node:fs/promises';
 
+let isDockerPromiseCache: Promise<boolean> | undefined;
+
+async function createIsDockerPromise() {
+    const promise1 = fs
+        .stat('/.dockerenv')
+        .then(() => true)
+        .catch(() => false);
+
+    const promise2 = fs
+        .readFile('/proc/self/cgroup', 'utf8')
+        .then((content) => content.includes('docker'))
+        .catch(() => false);
+
+    const [result1, result2] = await Promise.all([promise1, promise2]);
+
+    return result1 || result2;
+}
+
+/**
+ * Returns a `Promise` that resolves to true if the code is running in a Docker container.
+ */
+export async function isDocker(forceReset?: boolean): Promise<boolean> {
+    // Parameter forceReset is just internal for unit tests.
+    if (!isDockerPromiseCache || forceReset) isDockerPromiseCache = createIsDockerPromise();
+
+    return isDockerPromiseCache;
+}
+
 let isContainerizedResult: boolean | undefined;
 
 /**

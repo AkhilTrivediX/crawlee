@@ -1,7 +1,57 @@
 import asyncFs from 'node:fs/promises';
 
-import { getCgroupsVersion, isLambda } from '../../../packages/core/src/system-info/runtime.js';
+import { getCgroupsVersion, isDocker, isLambda } from '../../../packages/core/src/system-info/runtime.js';
 import { sleep } from '@crawlee/utils';
+
+describe('isDocker()', () => {
+    test('works for dockerenv && cgroup', async () => {
+        const statMock = vitest.spyOn(asyncFs, 'stat').mockImplementationOnce(async () => null as any);
+        const readMock = vitest
+            .spyOn(asyncFs, 'readFile')
+            .mockImplementationOnce(async () => Promise.resolve('something ... docker ... something'));
+
+        const is = await isDocker(true);
+
+        expect(is).toBe(true);
+    });
+
+    test('works for dockerenv', async () => {
+        const statMock = vitest.spyOn(asyncFs, 'stat').mockImplementationOnce(async () => null as any);
+        const readMock = vitest
+            .spyOn(asyncFs, 'readFile')
+            .mockImplementationOnce(async () => Promise.resolve('something ... ... something'));
+
+        const is = await isDocker(true);
+
+        expect(is).toBe(true);
+    });
+
+    test('works for cgroup', async () => {
+        const statMock = vitest
+            .spyOn(asyncFs, 'stat')
+            .mockImplementationOnce(async () => Promise.reject(new Error('no.')));
+        const readMock = vitest
+            .spyOn(asyncFs, 'readFile')
+            .mockImplementationOnce(async () => Promise.resolve('something ... docker ... something'));
+
+        const is = await isDocker(true);
+
+        expect(is).toBe(true);
+    });
+
+    test('works for nothing', async () => {
+        const statMock = vitest
+            .spyOn(asyncFs, 'stat')
+            .mockImplementationOnce(async () => Promise.reject(new Error('no.')));
+        const readMock = vitest
+            .spyOn(asyncFs, 'readFile')
+            .mockImplementationOnce(async () => Promise.resolve('something ... ... something'));
+
+        const is = await isDocker(true);
+
+        expect(is).toBe(false);
+    });
+});
 
 describe('isContainerized()', () => {
     afterEach(() => {
