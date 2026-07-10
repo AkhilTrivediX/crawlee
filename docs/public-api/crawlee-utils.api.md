@@ -31,6 +31,9 @@ export { CheerioAPI }
 // @public (undocumented)
 export type CheerioRoot = CheerioAPI;
 
+// @public (undocumented)
+export function chunk<T>(array: readonly T[], chunkSize: number): T[][];
+
 // @internal
 export function chunkedAsyncIterable<T>(iterable: AsyncIterable<T> | Iterable<T>, chunkSize: number): AsyncIterable<T[]>;
 
